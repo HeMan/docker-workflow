@@ -7,14 +7,14 @@
 
 services:
   db:
-    image: postgres:16-alpine
+    image: postgres:18-alpine
     restart: unless-stopped
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-todo}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-todo}
       POSTGRES_DB: ${POSTGRES_DB:-todo}
     volumes:
-      - db-data:/var/lib/postgresql/data
+      - db-data:/var/lib/postgresql
 
   app:
     image: ghcr.io/${GHCR_OWNER}/${GHCR_REPO}:latest

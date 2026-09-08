@@ -5,7 +5,7 @@ description = "Minimal FastAPI Todo app demonstrating a devcontainer + Postgres/
 authors = [
     { name = "Jimmy Hedman", email = "jimmy.hedman@gmail.com" }
 ]
-requires-python = ">=3.12"
+requires-python = ">=3.14"
 dependencies = [
     "alembic>=1.19.2",
     "asyncpg>=0.31.0",

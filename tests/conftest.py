@@ -18,7 +18,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 @pytest.fixture(scope="session")
 def database_url() -> AsyncGenerator[str]:
-    with PostgresContainer("postgres:16-alpine", driver="asyncpg") as postgres:
+    with PostgresContainer("postgres:18-alpine", driver="asyncpg") as postgres:
         yield postgres.get_connection_url()
 
 

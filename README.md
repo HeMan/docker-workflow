@@ -3,8 +3,12 @@
 A minimal FastAPI Todo app (show / add / complete). The point of this repo isn't the app — it's
 the workflow around it:
 
-- **Local dev** happens inside a VS Code [devcontainer](.devcontainer/devcontainer.json) that
-  gives you the app, Postgres, and pgAdmin for free.
+- **Local dev** happens inside a VS Code [devcontainer](.devcontainer/devcontainer.json). VS Code
+  attaches to a single `app` container (the official `mcr.microsoft.com/devcontainers/python`
+  image, unrelated to the repo's own [`Dockerfile`](Dockerfile)); a sidecar `db` (Postgres)
+  container starts alongside it via
+  [`.devcontainer/docker-compose.yml`](.devcontainer/docker-compose.yml), reachable at `db:5432`.
+  Docker access (via `docker-outside-of-docker`) lets tests spin up real containers too.
 - **Dependencies** are managed with [`uv`](https://docs.astral.sh/uv/).
 - **Tests** spin up a real Postgres via [testcontainers](https://testcontainers-python.readthedocs.io/),
   both on your laptop and in CI.
@@ -14,14 +18,15 @@ the workflow around it:
 
 ## Quick start (devcontainer)
 
+VS Code opens a single `app` container; a `db` (Postgres) container starts alongside it
+automatically — no manual steps or `.env` needed. `postCreateCommand` runs `uv sync` for you.
+
 1. Open this folder in VS Code, "Reopen in Container" when prompted.
-2. `postCreateCommand` runs `uv sync` for you. Start the app:
+2. Start the app:
    ```
    uv run fastapi dev app/main.py --host 0.0.0.0
    ```
-3. Open http://localhost:8000 for the UI, http://localhost:8000/docs for the API,
-   http://localhost:5050 for pgAdmin (login `admin@example.com` / `admin`; add a server
-   connecting to host `db`, user/password/db `todo`).
+3. Open http://localhost:8000 for the UI, http://localhost:8000/docs for the API.
 
 Migrations run automatically on app startup (see the `lifespan` handler in
 [`app/main.py`](app/main.py)), so there's no separate migrate step to remember.
@@ -32,8 +37,10 @@ Migrations run automatically on app startup (see the `lifespan` handler in
 docker compose up --build
 ```
 
-Same stack (`app` + `db` + `pgadmin`), same ports as above. The `app` service bind-mounts the repo
-so this doubles as a live-reload dev loop even outside the devcontainer.
+Runs the full stack (`app` + `db` + `pgadmin`): http://localhost:8000 for the UI,
+http://localhost:8000/docs for the API, http://localhost:5050 for pgAdmin (login
+`admin@example.com` / `admin`; add a server connecting to host `db`, user/password/db `todo`).
+The `app` service bind-mounts the repo so this doubles as a live-reload dev loop.
 
 ## Running tests
 
@@ -43,7 +50,7 @@ Inside the devcontainer (or anywhere with Docker + `uv`):
 uv run pytest
 ```
 
-[`tests/conftest.py`](tests/conftest.py) starts a real `postgres:16-alpine` container via
+[`tests/conftest.py`](tests/conftest.py) starts a real `postgres:18-alpine` container via
 testcontainers, runs Alembic migrations against it, and points the app's `get_db` dependency at
 it — no mocking, same code path as production. The same tests run in
 [`.github/workflows/ci.yml`](.github/workflows/ci.yml) since Docker is available on GitHub-hosted
@@ -56,7 +63,7 @@ app/            FastAPI app: routers (JSON API + HTML), models, schemas, crud
 alembic/        DB migrations (async SQLAlchemy)
 tests/          pytest + testcontainers
 deploy/         Portainer stack file + setup notes
-.devcontainer/  devcontainer.json (reuses the root docker-compose.yml)
+.devcontainer/  devcontainer.json + its own docker-compose.yml (app + db, no pgAdmin)
 .github/        CI: test -> build & push to GHCR on green
 ```
 
