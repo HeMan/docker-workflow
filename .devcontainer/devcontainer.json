@@ -1,0 +1,30 @@
+{
+  "name": "FastAPI Todo (Postgres + pgAdmin)",
+  "dockerComposeFile": "../docker-compose.yml",
+  "service": "app",
+  "workspaceFolder": "/app",
+  "shutdownAction": "stopCompose",
+  "overrideCommand": true,
+  "postCreateCommand": "uv sync",
+  "forwardPorts": [8000, 5050, 5432],
+  "portsAttributes": {
+    "8000": { "label": "FastAPI app" },
+    "5050": { "label": "pgAdmin" },
+    "5432": { "label": "Postgres" }
+  },
+  "features": {
+    "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {}
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.python",
+        "charliermarsh.ruff",
+        "ms-azuretools.vscode-docker"
+      ],
+      "settings": {
+        "python.defaultInterpreterPath": "/app/.venv/bin/python"
+      }
+    }
+  }
+}

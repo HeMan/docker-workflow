@@ -1,0 +1,40 @@
+# Stack file for Portainer. Deploy this on the target host (e.g. as a Portainer
+# "Git repository" stack pointed at this path, or pasted into the stack editor).
+#
+# CI pushes new images to ghcr.io/<owner>/<repo> on every green build on main.
+# Watchtower here polls that image and recreates the `app` container when a
+# new `:latest` digest shows up -- that's the actual "deploy" step.
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-todo}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-todo}
+      POSTGRES_DB: ${POSTGRES_DB:-todo}
+    volumes:
+      - db-data:/var/lib/postgresql/data
+
+  app:
+    image: ghcr.io/${GHCR_OWNER}/${GHCR_REPO}:latest
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-todo}:${POSTGRES_PASSWORD:-todo}@db:5432/${POSTGRES_DB:-todo}
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    labels:
+      - com.centurylabs.watchtower.enable=true
+
+  watchtower:
+    image: containrrr/watchtower
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    # Only touches containers labeled above; polls every 30s.
+    command: --interval 30 --label-enable --cleanup
+
+volumes:
+  db-data:
