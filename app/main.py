@@ -2,11 +2,11 @@ import asyncio
 from contextlib import asynccontextmanager
 from pathlib import Path
 
-from alembic import command
 from alembic.config import Config
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 
+from alembic import command
 from app.routers import api, web
 
 BASE_DIR = Path(__file__).resolve().parent.parent
