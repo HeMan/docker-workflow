@@ -1,0 +1,11 @@
+services:
+  app:
+    image: ghcr.io/heman/docker-workflow:latest
+
+    restart: unless-stopped
+
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+
+    ports:
+      - "18000:8000"
